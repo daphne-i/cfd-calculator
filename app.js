@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const reFlowRegimeEl = document.getElementById('re_flow_regime');
     const knFlowRegimeEl = document.getElementById('kn_flow_regime');
+    const nuHeatRegimeEl = document.getElementById('nu_heat_regime');
 
     // Curve fitting elements
     const cfPointsContainer = document.getElementById('cf_points_container');
@@ -257,18 +258,45 @@ document.addEventListener('DOMContentLoaded', () => {
         } else { state.result = '0.00'; }
         document.getElementById('pr_result').textContent = state.result;
     };
-    const calculateNusseltNumber = () => {
-        const state = calculatorState.nusseltNumber;
-        const isValid = [ validatePositive('nu_h', 'Heat Transfer Coeff.'), validatePositive('nu_l', 'Length'), validatePositive('nu_k', 'Thermal Conductivity') ].every(Boolean);
-        if(isValid) {
-            const H = convertToSI(state.h, state.h_unit);
-            const L = convertToSI(state.l, state.l_unit);
-            const K = convertToSI(state.k, state.k_unit);
-            state.result = ((H * L) / K).toExponential(4);
-            flashResult('nu_result');
-        } else { state.result = '0.00'; }
-        document.getElementById('nu_result').textContent = state.result;
-    };
+// In app.js, replace the entire calculateNusseltNumber function
+
+const calculateNusseltNumber = () => {
+    const state = calculatorState.nusseltNumber;
+    if (nuHeatRegimeEl) nuHeatRegimeEl.style.visibility = 'hidden';
+
+    const isValid = [
+        validatePositive('nu_h', 'Heat Transfer Coeff.'),
+        validatePositive('nu_l', 'Length'),
+        validatePositive('nu_k', 'Thermal Conductivity')
+    ].every(Boolean);
+
+    if (isValid) {
+        const H = convertToSI(state.h, state.h_unit);
+        const L = convertToSI(state.l, state.l_unit);
+        const K = convertToSI(state.k, state.k_unit);
+        const nu = (H * L) / K;
+        state.result = nu.toExponential(4);
+        flashResult('nu_result');
+
+        if (nuHeatRegimeEl) {
+            if (nu <= 1) {
+                nuHeatRegimeEl.className = 'flow-regime laminar'; // Reusing 'laminar' style for conduction
+                nuHeatRegimeEl.textContent = 'Heat Transfer: Pure Conduction';
+            } else if (nu <= 100) {
+                nuHeatRegimeEl.className = 'flow-regime transitional'; // Reusing 'transitional' style
+                nuHeatRegimeEl.textContent = 'Heat Transfer: Laminar Convection';
+            } else {
+                nuHeatRegimeEl.className = 'flow-regime turbulent'; // Reusing 'turbulent' style
+                nuHeatRegimeEl.textContent = 'Heat Transfer: Turbulent Convection';
+            }
+            nuHeatRegimeEl.style.visibility = 'visible';
+        }
+    } else {
+        state.result = '0.00';
+    }
+
+    document.getElementById('nu_result').textContent = state.result;
+};
     const calculateWeberNumber = () => {
         const state = calculatorState.weberNumber;
         const isValid = [
@@ -346,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // --- END OF REPLACEMENT BLOCK ---
-    
+
     // UI helpers
     let activeType = 'hydraulicDiameter';
 
