@@ -16,21 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const nuHeatRegimeEl = document.getElementById('nu_heat_regime');
     const weRegimeEl = document.getElementById('we_regime');
 
-    // Curve fitting elements
-    const cfPointsContainer = document.getElementById('cf_points_container');
-    const cfAddPointBtn = document.getElementById('cf_add_point');
-    const cfCanvas = document.getElementById('curveFitCanvas');
-    const cfCtx = cfCanvas.getContext('2d');
-    const cfEquationEl = document.getElementById('cf_equation');
-    const cfRSquaredEl = document.getElementById('cf_r_squared');
-
-
-    let hasUserInteracted = false; // Flag to track user interaction
+    let hasUserInteracted = false;
 
     const prefixMap = {
         hydraulicDiameter: 'hd', reynoldsNumber: 're', knudsenNumber: 'kn',
-        prandtlNumber: 'pr', nusseltNumber: 'nu', weberNumber: 'we', yPlus: 'yp',
-        curveFitting: 'cf'
+        prandtlNumber: 'pr', nusseltNumber: 'nu', weberNumber: 'we', yPlus: 'yp'
     };
     
     const conversionFactors = {
@@ -70,11 +60,6 @@ document.addEventListener('DOMContentLoaded', () => {
         yPlus: { 
             density: fluidPresets.air.density, density_unit: 'kg/m³', velocity: '10', velocity_unit: 'm/s', length: '1', length_unit: 'm', 
             viscosity: fluidPresets.air.viscosity, viscosity_unit: 'Pa·s', target_y_plus: '1', result: '0.00', result_unit: 'm' 
-        },
-        curveFitting: {
-            points: [ {velocity: 1, pressureDrop: 10}, {velocity: 2, pressureDrop: 45}, {velocity: 3, pressureDrop: 95} ],
-            equation: 'Pressure Drop = ...',
-            rSquared: ''
         }
     });
 
@@ -115,13 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Calculation functions
-// In app.js, replace the ENTIRE block from "const calculations = ..." 
-// down to the end of the last calculation function with this new code.
-
-    // --- START OF REPLACEMENT BLOCK ---
-
-    // Calculation functions now update their own DOM elements directly
     const calculateHydraulicDiameter = () => {
         const state = calculatorState.hydraulicDiameter;
         let resultInMeters = NaN;
@@ -259,79 +237,76 @@ document.addEventListener('DOMContentLoaded', () => {
         } else { state.result = '0.00'; }
         document.getElementById('pr_result').textContent = state.result;
     };
-// In app.js, replace the entire calculateNusseltNumber function
+    const calculateNusseltNumber = () => {
+        const state = calculatorState.nusseltNumber;
+        if (nuHeatRegimeEl) nuHeatRegimeEl.style.visibility = 'hidden';
 
-const calculateNusseltNumber = () => {
-    const state = calculatorState.nusseltNumber;
-    if (nuHeatRegimeEl) nuHeatRegimeEl.style.visibility = 'hidden';
+        const isValid = [
+            validatePositive('nu_h', 'Heat Transfer Coeff.'),
+            validatePositive('nu_l', 'Length'),
+            validatePositive('nu_k', 'Thermal Conductivity')
+        ].every(Boolean);
 
-    const isValid = [
-        validatePositive('nu_h', 'Heat Transfer Coeff.'),
-        validatePositive('nu_l', 'Length'),
-        validatePositive('nu_k', 'Thermal Conductivity')
-    ].every(Boolean);
+        if (isValid) {
+            const H = convertToSI(state.h, state.h_unit);
+            const L = convertToSI(state.l, state.l_unit);
+            const K = convertToSI(state.k, state.k_unit);
+            const nu = (H * L) / K;
+            state.result = nu.toExponential(4);
+            flashResult('nu_result');
 
-    if (isValid) {
-        const H = convertToSI(state.h, state.h_unit);
-        const L = convertToSI(state.l, state.l_unit);
-        const K = convertToSI(state.k, state.k_unit);
-        const nu = (H * L) / K;
-        state.result = nu.toExponential(4);
-        flashResult('nu_result');
-
-        if (nuHeatRegimeEl) {
-            if (nu <= 1) {
-                nuHeatRegimeEl.className = 'flow-regime laminar'; // Reusing 'laminar' style for conduction
-                nuHeatRegimeEl.textContent = 'Heat Transfer: Pure Conduction';
-            } else if (nu <= 100) {
-                nuHeatRegimeEl.className = 'flow-regime transitional'; // Reusing 'transitional' style
-                nuHeatRegimeEl.textContent = 'Heat Transfer: Laminar Convection';
-            } else {
-                nuHeatRegimeEl.className = 'flow-regime turbulent'; // Reusing 'turbulent' style
-                nuHeatRegimeEl.textContent = 'Heat Transfer: Turbulent Convection';
+            if (nuHeatRegimeEl) {
+                if (nu <= 1) {
+                    nuHeatRegimeEl.className = 'flow-regime laminar';
+                    nuHeatRegimeEl.textContent = 'Heat Transfer: Pure Conduction';
+                } else if (nu <= 100) {
+                    nuHeatRegimeEl.className = 'flow-regime transitional';
+                    nuHeatRegimeEl.textContent = 'Heat Transfer: Laminar Convection';
+                } else {
+                    nuHeatRegimeEl.className = 'flow-regime turbulent';
+                    nuHeatRegimeEl.textContent = 'Heat Transfer: Turbulent Convection';
+                }
+                nuHeatRegimeEl.style.visibility = 'visible';
             }
-            nuHeatRegimeEl.style.visibility = 'visible';
+        } else {
+            state.result = '0.00';
         }
-    } else {
-        state.result = '0.00';
-    }
 
-    document.getElementById('nu_result').textContent = state.result;
-};
-// In app.js, replace the entire calculateWeberNumber function
-const calculateWeberNumber = () => {
-    const state = calculatorState.weberNumber;
-    if (weRegimeEl) weRegimeEl.style.visibility = 'hidden';
+        document.getElementById('nu_result').textContent = state.result;
+    };
+    const calculateWeberNumber = () => {
+        const state = calculatorState.weberNumber;
+        if (weRegimeEl) weRegimeEl.style.visibility = 'hidden';
 
-    const isValid = [
-        validatePositive('we_density', 'Density'), validatePositive('we_velocity', 'Velocity'),
-        validatePositive('we_length', 'Length'), validatePositive('we_surface_tension', 'Surface Tension')
-    ].every(Boolean);
+        const isValid = [
+            validatePositive('we_density', 'Density'), validatePositive('we_velocity', 'Velocity'),
+            validatePositive('we_length', 'Length'), validatePositive('we_surface_tension', 'Surface Tension')
+        ].every(Boolean);
 
-    if (isValid) {
-        const rho = convertToSI(state.density, state.density_unit);
-        const V = convertToSI(state.velocity, state.velocity_unit);
-        const L = convertToSI(state.length, state.length_unit);
-        const sigma = convertToSI(state.surface_tension, state.surface_tension_unit);
-        const we = (rho * V * V * L) / sigma;
-        state.result = we.toExponential(4);
-        flashResult('we_result');
+        if (isValid) {
+            const rho = convertToSI(state.density, state.density_unit);
+            const V = convertToSI(state.velocity, state.velocity_unit);
+            const L = convertToSI(state.length, state.length_unit);
+            const sigma = convertToSI(state.surface_tension, state.surface_tension_unit);
+            const we = (rho * V * V * L) / sigma;
+            state.result = we.toExponential(4);
+            flashResult('we_result');
 
-        if (weRegimeEl) {
-            if (we < 10) {
-                weRegimeEl.className = 'flow-regime laminar'; // Reusing 'laminar' style
-                weRegimeEl.textContent = 'Regime: Surface Tension Dominant';
-            } else {
-                weRegimeEl.className = 'flow-regime turbulent'; // Reusing 'turbulent' style
-                weRegimeEl.textContent = 'Regime: Inertia Dominant';
+            if (weRegimeEl) {
+                if (we < 10) {
+                    weRegimeEl.className = 'flow-regime laminar';
+                    weRegimeEl.textContent = 'Regime: Surface Tension Dominant';
+                } else {
+                    weRegimeEl.className = 'flow-regime turbulent';
+                    weRegimeEl.textContent = 'Regime: Inertia Dominant';
+                }
+                weRegimeEl.style.visibility = 'visible';
             }
-            weRegimeEl.style.visibility = 'visible';
+        } else {
+            state.result = '0.00';
         }
-    } else {
-        state.result = '0.00';
-    }
-    document.getElementById('we_result').textContent = state.result;
-};
+        document.getElementById('we_result').textContent = state.result;
+    };
     const calculateFirstCellThickness = () => {
         const state = calculatorState.yPlus;
         const isValid = [
@@ -360,41 +335,13 @@ const calculateWeberNumber = () => {
         }
         document.getElementById('yp_result').textContent = state.result;
     };
-    const calculateCurveFit = () => {
-        const state = calculatorState.curveFitting;
-        const validPoints = state.points.filter(p => !isNaN(p.velocity) && !isNaN(p.pressureDrop));
-        
-        if (validPoints.length >= 2) {
-            const coeffs = quadraticFitNoIntercept(validPoints);
-            if (coeffs) {
-                state.equation = formatEquation(coeffs);
-                const rSquared = calculateRSquared(validPoints, coeffs.a, coeffs.b);
-                state.rSquared = `R² = ${rSquared.toFixed(4)}`;
-                drawGraph(validPoints, coeffs);
-            } else {
-                 state.equation = 'Fit failed (ensure positive correlation).';
-                 state.rSquared = '';
-                 drawGraph(validPoints, null);
-            }
-        } else {
-            state.equation = 'Not enough data points.';
-            state.rSquared = '';
-            drawGraph(validPoints, null);
-        }
-        cfEquationEl.textContent = state.equation;
-        cfRSquaredEl.textContent = state.rSquared;
-    };
 
     const calculations = {
         hydraulicDiameter: calculateHydraulicDiameter, reynoldsNumber: calculateReynoldsNumber,
         knudsenNumber: calculateKnudsenNumber, prandtlNumber: calculatePrandtlNumber,
-        nusseltNumber: calculateNusseltNumber, weberNumber: calculateWeberNumber, yPlus: calculateFirstCellThickness,
-        curveFitting: calculateCurveFit
+        nusseltNumber: calculateNusseltNumber, weberNumber: calculateWeberNumber, yPlus: calculateFirstCellThickness
     };
 
-    // --- END OF REPLACEMENT BLOCK ---
-
-    // UI helpers
     let activeType = 'hydraulicDiameter';
 
     const switchPanel = (type) => {
@@ -404,7 +351,7 @@ const calculateWeberNumber = () => {
             panel.classList.toggle('hidden', isHidden);
             if (!isHidden) {
                 panel.style.animation = 'none';
-                panel.offsetHeight; /* trigger reflow */
+                panel.offsetHeight;
                 panel.style.animation = null;
             }
         });
@@ -413,33 +360,27 @@ const calculateWeberNumber = () => {
         });
         
         presetsGroup.classList.toggle('hidden', !['reynoldsNumber', 'yPlus', 'weberNumber'].includes(type));
-
         updateUI();
     };
-// In app.js, replace the entire updateUI function with this:
-const updateUI = () => {
-    const state = calculatorState[activeType];
-    if (!state) return;
 
-    const prefix = prefixMap[activeType];
-    for (const key in state) {
-        const el = document.getElementById(`${prefix}_${key}`);
-        if (el) {
-            if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
-                // This check prevents the cursor from jumping.
-                if (document.activeElement !== el) {
-                    el.value = state[key];
+    const updateUI = () => {
+        const state = calculatorState[activeType];
+        if (!state) return;
+        const prefix = prefixMap[activeType];
+        for (const key in state) {
+            const el = document.getElementById(`${prefix}_${key}`);
+            if (el) {
+                if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                    if (document.activeElement !== el) {
+                        el.value = state[key];
+                    }
+                } else if (el.classList.contains('result-box')) {
+                    el.textContent = state[key];
                 }
-            } else if (el.classList.contains('result-box')) {
-                el.textContent = state[key];
             }
         }
-    }
-    if (activeType === 'curveFitting') {
-        cfEquationEl.textContent = state.equation;
-        cfRSquaredEl.textContent = state.rSquared;
-    }
-};
+    };
+
     const handleHdShapeChange = () => {
         const selectedShape = hdShapeSelect.value;
         calculatorState.hydraulicDiameter.shape = selectedShape;
@@ -453,15 +394,6 @@ const updateUI = () => {
         hasUserInteracted = true;
         const id = e.target.id;
         
-        if (id.startsWith('cf_point')) {
-            const parts = id.split('_');
-            const index = parts[2];
-            const axis = parts[3];
-            calculatorState.curveFitting.points[index][axis] = parseFloat(e.target.value);
-            calculateCurveFit();
-            return;
-        }
-
         for (const type in prefixMap) {
             const pref = prefixMap[type];
             if (id.startsWith(pref + '_')) {
@@ -538,47 +470,13 @@ const updateUI = () => {
                 }
             }
         });
-
         Object.values(calculations).forEach(calc => calc());
         updateUI();
     };
 
-    const renderPoints = () => {
-        cfPointsContainer.innerHTML = '';
-        calculatorState.curveFitting.points.forEach((p, index) => {
-            const row = document.createElement('tr');
-            row.className = 'point-row';
-            row.innerHTML = `
-                <td><input type="number" id="cf_point_${index}_velocity" value="${p.velocity}" step="any"></td>
-                <td><input type="number" id="cf_point_${index}_pressureDrop" value="${p.pressureDrop}" step="any"></td>
-                <td><button class="remove-point-btn" data-index="${index}">✖</button></td>
-            `;
-            cfPointsContainer.appendChild(row);
-        });
-    };
-
-    cfAddPointBtn.addEventListener('click', () => {
-        calculatorState.curveFitting.points.push({velocity: 0, pressureDrop: 0});
-        renderPoints();
-        calculateCurveFit();
-    });
-
-    cfPointsContainer.addEventListener('click', (e) => {
-        if (e.target.matches('.remove-point-btn')) {
-            const index = parseInt(e.target.dataset.index, 10);
-            calculatorState.curveFitting.points.splice(index, 1);
-            renderPoints();
-            calculateCurveFit();
-        }
-    });
-
     sidebar.addEventListener('click', (e) => {
         if (e.target.matches('.sidebar-item')) {
             switchPanel(e.target.dataset.type);
-            if (e.target.dataset.type === 'curveFitting') {
-                renderPoints();
-                calculateCurveFit();
-            }
         }
     });
     dataArea.addEventListener('input', handleInteraction);

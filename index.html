@@ -24,7 +24,6 @@
                 <button class="sidebar-item" data-type="nusseltNumber">Nusselt Number</button>
                 <button class="sidebar-item" data-type="weberNumber">Weber Number</button>
                 <button class="sidebar-item" data-type="yPlus">Y+</button>
-                <button class="sidebar-item" data-type="curveFitting">Curve Fitting</button>
             </nav>
             <div id="presetsGroup" class="presets-group hidden">
                 <h3 class="presets-title">Fluid Presets</h3>
@@ -557,34 +556,6 @@
                                 <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
                                 <svg class="check-icon hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
                            </button>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="curveFitting" class="calculator-panel hidden">
-                    <h2 class="panel-title">Curve Fitting (Quadratic)</h2>
-                    <div class="info-note" style="margin-bottom: 1.5rem;">
-    <p>This tool fits experimental data to the <b>Darcy-Forchheimer equation ($ \Delta P = aV^2 + bV $)</b>, commonly used to model pressure drop through porous media.</p>
-</div>
-                     <p style="font-size: 0.875rem; color: #9ca3af; margin-bottom: 1rem; margin-top: -0.5rem;">
-                        Fits data to the equation: <b>Pressure Drop = aV² + bV</b>
-                    </p>
-                    <div style="margin-top: 1.5rem;">
-                        <table class="points-table">
-                            <thead>
-                                <tr><th>Velocity</th><th>Pressure Drop</th><th></th></tr>
-                            </thead>
-                            <tbody id="cf_points_container">
-                                </tbody>
-                        </table>
-                        <button id="cf_add_point" class="action-button" style="width: auto; padding: 0.5rem 1rem; margin-top: 0.5rem;">Add Point</button>
-                    </div>
-
-                    <div style="margin-top: 1.5rem;">
-                        <canvas id="curveFitCanvas"></canvas>
-                        <div id="cf_equation_container" class="result-box" style="justify-content: center; flex-direction: column; align-items: center; padding: 1rem; height: auto;">
-                            <span id="cf_equation">Pressure Drop = ...</span>
-                            <span id="cf_r_squared" style="font-size: 0.9rem; color: #9ca3af; margin-top: 0.5rem;"></span>
                         </div>
                     </div>
                 </section>
