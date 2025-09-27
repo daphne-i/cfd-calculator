@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hdOtherInputs = document.getElementById('hd_other_inputs');
     
     const reFlowRegimeEl = document.getElementById('re_flow_regime');
+    const knFlowRegimeEl = document.getElementById('kn_flow_regime');
 
     // Curve fitting elements
     const cfPointsContainer = document.getElementById('cf_points_container');
@@ -113,6 +114,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Calculation functions
+// In app.js, replace the ENTIRE block from "const calculations = ..." 
+// down to the end of the last calculation function with this new code.
+
+    // --- START OF REPLACEMENT BLOCK ---
+
+    // Calculation functions now update their own DOM elements directly
     const calculateHydraulicDiameter = () => {
         const state = calculatorState.hydraulicDiameter;
         let resultInMeters = NaN;
@@ -155,7 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
             state.result = finalResult.toExponential(4);
             flashResult('hd_result');
         } else { state.result = '0.00'; }
-        updateUI();
+        document.getElementById('hd_result').textContent = state.result;
     };
     const calculateReynoldsNumber = () => {
         const state = calculatorState.reynoldsNumber;
@@ -164,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
             validatePositive('re_density', 'Density'), validatePositive('re_velocity', 'Velocity'),
             validatePositive('re_length', 'Length'), validatePositive('re_viscosity', 'Viscosity')
         ].every(Boolean);
+
         if (!isValid) {
             state.result = '0.00'; state.kinematic_viscosity_result = '0.00'; state.hydrodynamic_length_result = '0.00';
         } else {
@@ -182,11 +190,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 reFlowRegimeEl.className = 'flow-regime laminar';
                 reFlowRegimeEl.textContent = 'Flow Regime: Laminar';
                 reFlowRegimeEl.style.visibility = 'visible';
-            } else if (reynolds >= 2300 && reynolds <= 4000) {
-                 le_si = 4.4 * L * Math.pow(reynolds, 1/6);
-                 reFlowRegimeEl.className = 'flow-regime transitional';
-                 reFlowRegimeEl.textContent = 'Flow Regime: Transitional';
-                 reFlowRegimeEl.style.visibility = 'visible';
+            } else if (reynolds <= 4000) {
+                le_si = 4.4 * L * Math.pow(reynolds, 1/6);
+                reFlowRegimeEl.className = 'flow-regime transitional';
+                reFlowRegimeEl.textContent = 'Flow Regime: Transitional';
+                reFlowRegimeEl.style.visibility = 'visible';
             } else {
                 le_si = 4.4 * L * Math.pow(reynolds, 1/6);
                 reFlowRegimeEl.className = 'flow-regime turbulent';
@@ -197,29 +205,57 @@ document.addEventListener('DOMContentLoaded', () => {
             state.hydrodynamic_length_result = le_display.toExponential(4);
             ['re_result', 're_kinematic_viscosity_result', 're_hydrodynamic_length_result'].forEach(flashResult);
         }
-        updateUI();
+        document.getElementById('re_result').textContent = state.result;
+        document.getElementById('re_kinematic_viscosity_result').textContent = state.kinematic_viscosity_result;
+        document.getElementById('re_hydrodynamic_length_result').textContent = state.hydrodynamic_length_result;
     };
     const calculateKnudsenNumber = () => {
         const state = calculatorState.knudsenNumber;
-         const isValid = [ validatePositive('kn_mean_free_path', 'Mean Free Path'), validatePositive('kn_length', 'Length') ].every(Boolean);
+        if (knFlowRegimeEl) knFlowRegimeEl.style.visibility = 'hidden';
+
+        const isValid = [
+            validatePositive('kn_mean_free_path', 'Mean Free Path'),
+            validatePositive('kn_length', 'Length')
+        ].every(Boolean);
+
         if (isValid) {
-             const lambda = convertToSI(state.mean_free_path, state.mean_free_path_unit);
-             const L = convertToSI(state.length, state.length_unit);
-             state.result = (lambda / L).toExponential(4);
-             flashResult('kn_result');
-        } else { state.result = '0.00'; }
-        updateUI();
+            const lambda = convertToSI(state.mean_free_path, state.mean_free_path_unit);
+            const L = convertToSI(state.length, state.length_unit);
+            const kn = lambda / L;
+            state.result = kn.toExponential(4);
+            flashResult('kn_result');
+
+            if (knFlowRegimeEl) {
+                if (kn < 0.01) {
+                    knFlowRegimeEl.className = 'flow-regime continuum';
+                    knFlowRegimeEl.textContent = 'Flow Regime: Continuum';
+                } else if (kn < 0.1) {
+                    knFlowRegimeEl.className = 'flow-regime slip';
+                    knFlowRegimeEl.textContent = 'Flow Regime: Slip';
+                } else if (kn < 10) {
+                    knFlowRegimeEl.className = 'flow-regime transitional';
+                    knFlowRegimeEl.textContent = 'Flow Regime: Transitional';
+                } else {
+                    knFlowRegimeEl.className = 'flow-regime free-molecular';
+                    knFlowRegimeEl.textContent = 'Flow Regime: Free Molecular';
+                }
+                knFlowRegimeEl.style.visibility = 'visible';
+            }
+        } else {
+            state.result = '0.00';
+        }
+        document.getElementById('kn_result').textContent = state.result;
     };
     const calculatePrandtlNumber = () => {
         const state = calculatorState.prandtlNumber;
         const isValid = [ validatePositive('pr_kinematic_viscosity', 'Kinematic Viscosity'), validatePositive('pr_thermal_diffusivity', 'Thermal Diffusivity') ].every(Boolean);
-         if (isValid) {
-             const nu = convertToSI(state.kinematic_viscosity, state.kinematic_viscosity_unit);
-             const alpha = convertToSI(state.thermal_diffusivity, state.thermal_diffusivity_unit);
-             state.result = (nu / alpha).toExponential(4);
-             flashResult('pr_result');
+        if (isValid) {
+            const nu = convertToSI(state.kinematic_viscosity, state.kinematic_viscosity_unit);
+            const alpha = convertToSI(state.thermal_diffusivity, state.thermal_diffusivity_unit);
+            state.result = (nu / alpha).toExponential(4);
+            flashResult('pr_result');
         } else { state.result = '0.00'; }
-        updateUI();
+        document.getElementById('pr_result').textContent = state.result;
     };
     const calculateNusseltNumber = () => {
         const state = calculatorState.nusseltNumber;
@@ -231,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
             state.result = ((H * L) / K).toExponential(4);
             flashResult('nu_result');
         } else { state.result = '0.00'; }
-        updateUI();
+        document.getElementById('nu_result').textContent = state.result;
     };
     const calculateWeberNumber = () => {
         const state = calculatorState.weberNumber;
@@ -244,11 +280,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const V = convertToSI(state.velocity, state.velocity_unit);
             const L = convertToSI(state.length, state.length_unit);
             const sigma = convertToSI(state.surface_tension, state.surface_tension_unit);
-            const weber = (rho * V * V * L) / sigma;
-            state.result = weber.toExponential(4);
+            state.result = ((rho * V * V * L) / sigma).toExponential(4);
             flashResult('we_result');
         } else { state.result = '0.00'; }
-        updateUI();
+        document.getElementById('we_result').textContent = state.result;
     };
     const calculateFirstCellThickness = () => {
         const state = calculatorState.yPlus;
@@ -257,7 +292,8 @@ document.addEventListener('DOMContentLoaded', () => {
             validatePositive('yp_length', 'Length'), validatePositive('yp_viscosity', 'Viscosity'),
             validatePositive('yp_target_y_plus', 'Desired Y+')
         ].every(Boolean);
-        if (!isValid) { state.result = '0.00';
+        if (!isValid) { 
+            state.result = '0.00';
         } else {
             const rho = convertToSI(state.density, state.density_unit);
             const U = convertToSI(state.velocity, state.velocity_unit);
@@ -275,133 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 flashResult('yp_result');
             } else { state.result = '0.00'; }
         }
-        updateUI();
+        document.getElementById('yp_result').textContent = state.result;
     };
-
-    // --- Curve Fitting Logic ---
-    const quadraticFitNoIntercept = (points) => {
-        let sum_x4 = 0, sum_x3 = 0, sum_x2 = 0;
-        let sum_yx2 = 0, sum_yx = 0;
-
-        for (const p of points) {
-            const x = p.velocity;
-            const y = p.pressureDrop;
-            const x2 = x * x;
-            sum_x4 += x2 * x2;
-            sum_x3 += x2 * x;
-            sum_x2 += x2;
-            sum_yx2 += y * x2;
-            sum_yx += y * x;
-        }
-
-        const det = sum_x4 * sum_x2 - sum_x3 * sum_x3;
-        if (Math.abs(det) < 1e-9) return null;
-
-        let a = (sum_yx2 * sum_x2 - sum_yx * sum_x3) / det;
-        let b = (sum_yx * sum_x4 - sum_yx2 * sum_x3) / det;
-        
-        if (a < 0 || b < 0) {
-            if (b < 0) { 
-                const sum_x4_pure = points.reduce((s, p) => s + Math.pow(p.velocity, 4), 0);
-                const sum_x2y = points.reduce((s, p) => s + p.velocity*p.velocity * p.pressureDrop, 0);
-                a = (sum_x4_pure > 0) ? sum_x2y / sum_x4_pure : 0;
-                b = 0;
-            }
-            if (a < 0) {
-                const sum_x_sq = points.reduce((s, p) => s + p.velocity * p.velocity, 0);
-                const sum_xy = points.reduce((s, p) => s + p.velocity * p.pressureDrop, 0);
-                a = 0;
-                b = (sum_x_sq > 0) ? sum_xy / sum_x_sq : 0;
-            }
-             if (a < 0 || b < 0) return null;
-        }
-
-        return { a, b };
-    };
-
-    const calculateRSquared = (points, a, b) => {
-        if(points.length === 0) return 0;
-        const yMean = points.reduce((sum, p) => sum + p.pressureDrop, 0) / points.length;
-        let ssTot = 0;
-        let ssRes = 0;
-
-        for (const p of points) {
-            const y_fit = a * p.velocity * p.velocity + b * p.velocity;
-            ssTot += (p.pressureDrop - yMean) * (p.pressureDrop - yMean);
-            ssRes += (p.pressureDrop - y_fit) * (p.pressureDrop - y_fit);
-        }
-
-        if (ssTot === 0) return 1.0;
-        return 1 - (ssRes / ssTot);
-    };
-
-    const formatEquation = (coeffs) => {
-        if (!coeffs) return 'Pressure Drop = ...';
-        return `ΔP = ${coeffs.a.toFixed(4)}V² + ${coeffs.b.toFixed(4)}V`;
-    };
-
-    const drawGraph = (points, coeffs) => {
-        const padding = 40;
-        const width = cfCanvas.width;
-        const height = cfCanvas.height;
-        cfCtx.clearRect(0, 0, width, height);
-
-        if (points.length < 1) return;
-
-        const xValues = points.map(p => p.velocity);
-        const yValues = points.map(p => p.pressureDrop);
-
-        let minX = 0;
-        let maxX = Math.max(...xValues);
-        let minY = 0;
-        let maxY = Math.max(...yValues);
-        
-        if(points.length === 1 && maxX === 0) { maxX = 1; }
-        if(points.length === 1 && maxY === 0) { maxY = 1; }
-
-        const rangeX = maxX - minX || 1;
-        const rangeY = maxY - minY || 1;
-        
-        const scaleX = (width - 2 * padding) / rangeX;
-        const scaleY = (height - 2 * padding) / rangeY;
-
-        const transformX = (x) => padding + (x - minX) * scaleX;
-        const transformY = (y) => height - padding - (y - minY) * scaleY;
-
-        // Draw axes
-        cfCtx.strokeStyle = '#4b5563';
-        cfCtx.beginPath();
-        cfCtx.moveTo(padding, 0); cfCtx.lineTo(padding, height - padding); cfCtx.lineTo(width, height - padding);
-        cfCtx.stroke();
-        
-        // Draw points
-        cfCtx.fillStyle = '#6366f1';
-        points.forEach(p => {
-            cfCtx.beginPath();
-            cfCtx.arc(transformX(p.velocity), transformY(p.pressureDrop), 4, 0, 2 * Math.PI);
-            cfCtx.fill();
-        });
-
-        // Draw curve
-        if (coeffs && points.length > 1) {
-            cfCtx.strokeStyle = '#4ade80';
-            cfCtx.lineWidth = 2;
-            cfCtx.beginPath();
-            const steps = 100;
-            for (let i = 0; i <= steps; i++) {
-                const x = minX + (rangeX * i) / steps;
-                const y = coeffs.a * x * x + coeffs.b * x;
-                if (i === 0) {
-                    cfCtx.moveTo(transformX(x), transformY(y));
-                } else {
-                    cfCtx.lineTo(transformX(x), transformY(y));
-                }
-            }
-            cfCtx.stroke();
-            cfCtx.lineWidth = 1;
-        }
-    };
-    
     const calculateCurveFit = () => {
         const state = calculatorState.curveFitting;
         const validPoints = state.points.filter(p => !isNaN(p.velocity) && !isNaN(p.pressureDrop));
@@ -423,9 +334,9 @@ document.addEventListener('DOMContentLoaded', () => {
             state.rSquared = '';
             drawGraph(validPoints, null);
         }
-        updateUI();
+        cfEquationEl.textContent = state.equation;
+        cfRSquaredEl.textContent = state.rSquared;
     };
-
 
     const calculations = {
         hydraulicDiameter: calculateHydraulicDiameter, reynoldsNumber: calculateReynoldsNumber,
@@ -434,6 +345,8 @@ document.addEventListener('DOMContentLoaded', () => {
         curveFitting: calculateCurveFit
     };
 
+    // --- END OF REPLACEMENT BLOCK ---
+    
     // UI helpers
     let activeType = 'hydraulicDiameter';
 
@@ -456,26 +369,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
         updateUI();
     };
-    const updateUI = () => {
-        const state = calculatorState[activeType];
-        if (!state) return;
+// In app.js, replace the entire updateUI function with this:
+const updateUI = () => {
+    const state = calculatorState[activeType];
+    if (!state) return;
 
-        const prefix = prefixMap[activeType];
-        for (const key in state) {
-            const el = document.getElementById(`${prefix}_${key}`);
-            if (el) {
-                if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
-                    if(document.activeElement !== el) el.value = state[key];
-                } else if (el.classList.contains('result-box')) {
-                    el.textContent = state[key];
+    const prefix = prefixMap[activeType];
+    for (const key in state) {
+        const el = document.getElementById(`${prefix}_${key}`);
+        if (el) {
+            if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+                // This check prevents the cursor from jumping.
+                if (document.activeElement !== el) {
+                    el.value = state[key];
                 }
+            } else if (el.classList.contains('result-box')) {
+                el.textContent = state[key];
             }
         }
-         if (activeType === 'curveFitting') {
-            cfEquationEl.textContent = state.equation;
-            cfRSquaredEl.textContent = state.rSquared;
-        }
-    };
+    }
+    if (activeType === 'curveFitting') {
+        cfEquationEl.textContent = state.equation;
+        cfRSquaredEl.textContent = state.rSquared;
+    }
+};
     const handleHdShapeChange = () => {
         const selectedShape = hdShapeSelect.value;
         calculatorState.hydraulicDiameter.shape = selectedShape;
