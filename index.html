@@ -535,6 +535,14 @@
                             <div class="validation-message" id="yp_target_y_plus_error"></div>
                         </div>
                     </div>
+                    <div class="info-note" style="margin-top: 1.5rem; margin-bottom: 1.5rem;">
+    <p>Common Y+ targets for turbulence wall modeling:</p>
+    <ul>
+        <li><b><i>y</i><sup>+</sup> < 5 (Viscous Sublayer):</b> Target for low-Re models that resolve the boundary layer. A common choice is <b><i>y</i><sup>+</sup> = 1</b>.</li>
+        <li><b>5 < <i>y</i><sup>+</sup> < 30 (Buffer Layer):</b> <b>Avoid</b> placing the first mesh cell in this region.</li>
+        <li><b><i>y</i><sup>+</sup> > 30 (Log-Law Region):</b> Target for high-Re models using wall functions. A common choice is <b><i>y</i><sup>+</sup> = 30</b>.</li>
+    </ul>
+</div>
                     <div style="margin-top: 1.5rem;">
                         <label>Resulting First Cell Thickness (y)</label>
                         <div class="input-group">
