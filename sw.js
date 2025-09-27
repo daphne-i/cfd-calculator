@@ -1,14 +1,14 @@
 const CACHE_NAME = 'cfd-calculator-v1';
+// Corrected paths: removed the leading slashes
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/app.js',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  './',
+  './index.html',
+  './style.css',
+  './app.js',
+  './icons/icon-192x192.png',
+  './icons/icon-512x512.png'
 ];
 
-// Install a service worker
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -19,7 +19,6 @@ self.addEventListener('install', event => {
   );
 });
 
-// Cache and return requests
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
@@ -34,7 +33,6 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Update a service worker
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
