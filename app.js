@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const reFlowRegimeEl = document.getElementById('re_flow_regime');
     const knFlowRegimeEl = document.getElementById('kn_flow_regime');
     const nuHeatRegimeEl = document.getElementById('nu_heat_regime');
+    const weRegimeEl = document.getElementById('we_regime');
 
     // Curve fitting elements
     const cfPointsContainer = document.getElementById('cf_points_container');
@@ -297,22 +298,40 @@ const calculateNusseltNumber = () => {
 
     document.getElementById('nu_result').textContent = state.result;
 };
-    const calculateWeberNumber = () => {
-        const state = calculatorState.weberNumber;
-        const isValid = [
-            validatePositive('we_density', 'Density'), validatePositive('we_velocity', 'Velocity'),
-            validatePositive('we_length', 'Length'), validatePositive('we_surface_tension', 'Surface Tension')
-        ].every(Boolean);
-        if (isValid) {
-            const rho = convertToSI(state.density, state.density_unit);
-            const V = convertToSI(state.velocity, state.velocity_unit);
-            const L = convertToSI(state.length, state.length_unit);
-            const sigma = convertToSI(state.surface_tension, state.surface_tension_unit);
-            state.result = ((rho * V * V * L) / sigma).toExponential(4);
-            flashResult('we_result');
-        } else { state.result = '0.00'; }
-        document.getElementById('we_result').textContent = state.result;
-    };
+// In app.js, replace the entire calculateWeberNumber function
+const calculateWeberNumber = () => {
+    const state = calculatorState.weberNumber;
+    if (weRegimeEl) weRegimeEl.style.visibility = 'hidden';
+
+    const isValid = [
+        validatePositive('we_density', 'Density'), validatePositive('we_velocity', 'Velocity'),
+        validatePositive('we_length', 'Length'), validatePositive('we_surface_tension', 'Surface Tension')
+    ].every(Boolean);
+
+    if (isValid) {
+        const rho = convertToSI(state.density, state.density_unit);
+        const V = convertToSI(state.velocity, state.velocity_unit);
+        const L = convertToSI(state.length, state.length_unit);
+        const sigma = convertToSI(state.surface_tension, state.surface_tension_unit);
+        const we = (rho * V * V * L) / sigma;
+        state.result = we.toExponential(4);
+        flashResult('we_result');
+
+        if (weRegimeEl) {
+            if (we < 10) {
+                weRegimeEl.className = 'flow-regime laminar'; // Reusing 'laminar' style
+                weRegimeEl.textContent = 'Regime: Surface Tension Dominant';
+            } else {
+                weRegimeEl.className = 'flow-regime turbulent'; // Reusing 'turbulent' style
+                weRegimeEl.textContent = 'Regime: Inertia Dominant';
+            }
+            weRegimeEl.style.visibility = 'visible';
+        }
+    } else {
+        state.result = '0.00';
+    }
+    document.getElementById('we_result').textContent = state.result;
+};
     const calculateFirstCellThickness = () => {
         const state = calculatorState.yPlus;
         const isValid = [
