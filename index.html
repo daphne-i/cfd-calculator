@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFD Calculator — Offline</title>
+    
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <script src="app.js" defer></script>
+    <div class="container glass-effect">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h1 class="app-title">CFD CALC</h1>
+            <nav id="sidebar" class="sidebar-nav">
+                <button class="sidebar-item active-item" data-type="hydraulicDiameter">Hydraulic Diameter</button>
+                <button class="sidebar-item" data-type="reynoldsNumber">Reynolds Number</button>
+                <button class="sidebar-item" data-type="knudsenNumber">Knudsen Number</button>
+                <button class="sidebar-item" data-type="prandtlNumber">Prandtl Number</button>
+                <button class="sidebar-item" data-type="nusseltNumber">Nusselt Number</button>
+                <button class="sidebar-item" data-type="weberNumber">Weber Number</button>
+                <button class="sidebar-item" data-type="yPlus">Y+</button>
+                <button class="sidebar-item" data-type="curveFitting">Curve Fitting</button>
+            </nav>
+            <div id="presetsGroup" class="presets-group hidden">
+                <h3 class="presets-title">Fluid Presets</h3>
+                <div class="presets-buttons">
+                    <button class="preset-btn" data-fluid="air">Load Air</button>
+                    <button class="preset-btn" data-fluid="water">Load Water</button>
+                </div>
+            </div>
+            <button id="resetButton" class="reset-button">Reset All Data</button>
+        </aside>
+
+        <!-- Main content -->
+        <main id="mainArea" class="main-content">
+            <div id="dataArea">
+
+                <!-- ... Existing calculator panels ... -->
+                <section id="hydraulicDiameter" class="calculator-panel">
+                    <h2 class="panel-title">Hydraulic Diameter (Dₕ)</h2>
+                    <div class="info-note" style="margin-bottom: 1.5rem;">
+                        <p>The <b>hydraulic diameter (Dₕ)</b> is a way to represent the "effective diameter" of fluid flow when the tube or channel is not perfectly circular.</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label for="hd_shape">Shape</label>
+                        <select id="hd_shape" class="shape-select">
+                            <option>Annulus</option>
+                            <option>Rectangular Duct</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+
+                    <div id="hd_inputs_container">
+                         <div id="hd_annulus_inputs" class="input-grid">
+                            <div class="input-container">
+                                <label for="hd_d2">Outer Diameter (D₂)</label>
+                                <div class="input-group">
+                                    <input type="number" id="hd_d2" placeholder="e.g., 0.1">
+                                    <select id="hd_d2_unit" class="unit-select">
+                                        <option>m</option><option>cm</option><option>mm</option><option>ft</option><option>in</option>
+                                    </select>
+                                </div>
+                                <div class="validation-message" id="hd_d2_error"></div>
+                            </div>
+                            <div class="input-container">
+                                <label for="hd_d1">Inner Diameter (D₁)</label>
+                                <div class="input-group">
+                                    <input type="number" id="hd_d1" placeholder="e.g., 0.05">
+                                    <select id="hd_d1_unit" class="unit-select">
+                                        <option>m</option><option>cm</option><option>mm</option><option>ft</option><option>in</option>
+                                    </select>
+                                </div>
+                                <div class="validation-message" id="hd_d1_error"></div>
+                            </div>
+                        </div>
+
+                        <div id="hd_rect_inputs" class="input-grid hidden">
+                            <div class="input-container">
+                                <label for="hd_width">Width (W)</label>
+                                <div class="input-group">
+                                    <input type="number" id="hd_width" placeholder="e.g., 0.2">
+                                    <select id="hd_width_unit" class="unit-select">
+                                        <option>m</option><option>cm</option><option>mm</option><option>ft</option><option>in</option>
+                                    </select>
+                                </div>
+                                <div class="validation-message" id="hd_width_error"></div>
+                            </div>
+                            <div class="input-container">
+                                <label for="hd_height">Height (H)</label>
+                                <div class="input-group">
+                                    <input type="number" id="hd_height" placeholder="e.g., 0.1">
+                                    <select id="hd_height_unit" class="unit-select">
+                                        <option>m</option><option>cm</option><option>mm</option><option>ft</option><option>in</option>
+                                    </select>
+                                </div>
+                                <div class="validation-message" id="hd_height_error"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="hd_other_inputs" class="input-grid hidden">
+                            <div class="input-container">
+                                <label for="hd_area">Cross-sectional Area (A)</label>
+                                <div class="input-group">
+                                    <input type="number" id="hd_area" placeholder="e.g., 0.05">
+                                    <select id="hd_area_unit" class="unit-select">
+                                        <option>m²</option><option>cm²</option><option>mm²</option><option>ft²</option><option>in²</option>
+                                    </select>
+                                </div>
+                                <div class="validation-message" id="hd_area_error"></div>
+                            </div>
+                            <div class="input-container">
+                                <label for="hd_perimeter">Wetted Perimeter (P)</label>
+                                 <div class="input-group">
+                                    <input type="number" id="hd_perimeter" placeholder="e.g., 1.2">
+                                    <select id="hd_perimeter_unit" class="unit-select">
+                                        <option>m</option><option>cm</option><option>mm</option><option>ft</option><option>in</option>
+                                    </select>
+                                </div>
+                                <div class="validation-message" id="hd_perimeter_error"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                   <div style="margin-top: 1.5rem;">
+                        <label>Result</label>
+                        <div class="input-group">
+                           <div id="hd_result" class="result-box with-select">0.00</div>
+                           <select id="hd_result_unit" class="unit-select">
+                               <option>m</option><option>cm</option><option>mm</option><option>ft</option><option>in</option>
+                           </select>
+                           <button class="copy-btn" data-target="hd_result" title="Copy to clipboard">
+                                <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+                                <svg class="check-icon hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                           </button>
+                        </div>
+                    </div>
+                    <div class="info-note" style="margin-top: 1.5rem;">
+                        <ul>
+                            <li><b>Circular Pipe:</b> Dₕ = Diameter of Pipe</li>
+                            <li><b>Square Duct:</b> Dₕ = Side Length</li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section id="reynoldsNumber" class="calculator-panel hidden">
+                    <h2 class="panel-title">Reynolds Number (Re)</h2>
+                     <div class="input-grid">
+                        <div class="input-container">
+                             <label for="re_density">
+                                <span class="tooltip-container">Fluid Density (ρ)<span class="tooltip-icon">?</span><span class="tooltip-text">Mass per unit volume.</span></span>
+                            </label>
+                             <div class="input-group">
+                                <input type="number" id="re_density" placeholder="kg/m³">
+                                <select id="re_density_unit" class="unit-select">
+                                    <option>kg/m³</option><option>g/cm³</option><option>lb/ft³</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="re_density_error"></div>
+                        </div>
+                        <div class="input-container">
+                            <label for="re_velocity">Flow Velocity (V)</label>
+                            <div class="input-group">
+                                <input type="number" id="re_velocity" placeholder="m/s">
+                                <select id="re_velocity_unit" class="unit-select">
+                                    <option>m/s</option><option>cm/s</option><option>ft/s</option><option>km/h</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="re_velocity_error"></div>
+                        </div>
+                        <div class="input-container">
+                            <label for="re_length">Characteristic Length (L)</label>
+                            <div class="input-group">
+                                <input type="number" id="re_length" placeholder="m">
+                                <select id="re_length_unit" class="unit-select">
+                                    <option>m</option><option>cm</option><option>mm</option><option>ft</option><option>in</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="re_length_error"></div>
+                        </div>
+                        <div class="input-container">
+                            <label for="re_viscosity">
+                                 <span class="tooltip-container">Dynamic Viscosity (μ)<span class="tooltip-icon">?</span><span class="tooltip-text">A fluid's resistance to shear stresses. Also called absolute viscosity.</span></span>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" id="re_viscosity" placeholder="Pa·s">
+                                <select id="re_viscosity_unit" class="unit-select">
+                                    <option>Pa·s</option><option>cP</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="re_viscosity_error"></div>
+                        </div>
+                    </div>
+                    <div class="results-group" style="margin-top: 1rem;">
+                        <h3 class="results-header">Results</h3>
+                        <div class="results-grid">
+                            <!-- Reynolds Number -->
+                            <div>
+                                <label>Reynolds Number (Re)</label>
+                                <div class="input-group">
+                                    <div id="re_result" class="result-box">0.00</div>
+                                    <button class="copy-btn" data-target="re_result" title="Copy to clipboard">
+                                        <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+                                        <svg class="check-icon hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                                   </button>
+                                </div>
+                            </div>
+                            <!-- Kinematic Viscosity -->
+                            <div>
+                                <label for="re_kinematic_viscosity_unit">
+                                    <span class="tooltip-container">Kinematic Viscosity (ν)<span class="tooltip-icon">?</span><span class="tooltip-text">Ratio of dynamic viscosity to density (μ/ρ).</span></span>
+                                </label>
+                                <div class="input-group">
+                                    <div id="re_kinematic_viscosity_result" class="result-box with-select">0.00</div>
+                                    <select id="re_kinematic_viscosity_unit" class="unit-select">
+                                        <option>m²/s</option>
+                                        <option>cm²/s</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <!-- Entrance Length -->
+                            <div>
+                                <label for="re_hydrodynamic_length_unit">Entrance Length (Le)</label>
+                                <div class="input-group">
+                                    <div id="re_hydrodynamic_length_result" class="result-box with-select">0.00</div>
+                                    <select id="re_hydrodynamic_length_unit" class="unit-select">
+                                        <option>m</option>
+                                        <option>cm</option>
+                                        <option>mm</option>
+                                        <option>ft</option>
+                                        <option>in</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="re_flow_regime" class="flow-regime" style="visibility: hidden;"></div>
+                        <div class="info-note" style="margin-top: 1.5rem;">
+                            <p>For internal pipe flow:</p>
+                            <ul>
+                                <li><b>Laminar Flow:</b> Re &lt; 2300</li>
+                                <li><b>Transitional Flow:</b> 2300 &le; Re &le; 4000</li>
+                                <li><b>Turbulent Flow:</b> Re &gt; 4000</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="knudsenNumber" class="calculator-panel hidden">
+                    <h2 class="panel-title">Knudsen Number (Kn)</h2>
+                    <div class="input-grid">
+                        <div class="input-container">
+                             <label for="kn_mean_free_path">
+                                 <span class="tooltip-container">Mean Free Path (λ)<span class="tooltip-icon">?</span><span class="tooltip-text">Average distance a particle travels between collisions.</span></span>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" id="kn_mean_free_path" placeholder="m">
+                                <select id="kn_mean_free_path_unit" class="unit-select">
+                                    <option>m</option><option>cm</option><option>mm</option><option>nm</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="kn_mean_free_path_error"></div>
+                        </div>
+                        <div class="input-container">
+                            <label for="kn_length">Characteristic Length (L)</label>
+                            <div class="input-group">
+                                <input type="number" id="kn_length" placeholder="m">
+                                <select id="kn_length_unit" class="unit-select">
+                                    <option>m</option><option>cm</option><option>mm</option><option>nm</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="kn_length_error"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <label>Result (Dimensionless)</label>
+                         <div class="input-group">
+                            <div id="kn_result" class="result-box">0.00</div>
+                             <button class="copy-btn" data-target="kn_result" title="Copy to clipboard">
+                                <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+                                <svg class="check-icon hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                           </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="prandtlNumber" class="calculator-panel hidden">
+                    <h2 class="panel-title">Prandtl Number (Pr)</h2>
+                    <div class="input-grid">
+                        <div class="input-container">
+                            <label for="pr_kinematic_viscosity">
+                                <span class="tooltip-container">Kinematic Viscosity (ν)<span class="tooltip-icon">?</span><span class="tooltip-text">Ratio of dynamic viscosity to density (μ/ρ).</span></span>
+                            </label>
+                             <div class="input-group">
+                                <input type="number" id="pr_kinematic_viscosity" placeholder="m²/s">
+                                <select id="pr_kinematic_viscosity_unit" class="unit-select">
+                                    <option>m²/s</option><option>cm²/s</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="pr_kinematic_viscosity_error"></div>
+                        </div>
+                        <div class="input-container">
+                            <label for="pr_thermal_diffusivity">
+                                <span class="tooltip-container">Thermal Diffusivity (α)<span class="tooltip-icon">?</span><span class="tooltip-text">Measure of the rate of heat transfer.</span></span>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" id="pr_thermal_diffusivity" placeholder="m²/s">
+                                 <select id="pr_thermal_diffusivity_unit" class="unit-select">
+                                    <option>m²/s</option><option>cm²/s</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="pr_thermal_diffusivity_error"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <label>Result (Dimensionless)</label>
+                        <div class="input-group">
+                            <div id="pr_result" class="result-box">0.00</div>
+                            <button class="copy-btn" data-target="pr_result" title="Copy to clipboard">
+                                <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+                                <svg class="check-icon hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                           </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="nusseltNumber" class="calculator-panel hidden">
+                    <h2 class="panel-title">Nusselt Number (Nu)</h2>
+                    <div class="input-grid">
+                        <div class="input-container">
+                            <label for="nu_h">Heat Transfer Coeff. (h)</label>
+                            <div class="input-group">
+                                <input type="number" id="nu_h" placeholder="W/(m²·K)">
+                                <select id="nu_h_unit" class="unit-select">
+                                    <option>W/(m²·K)</option><option>BTU/(hr·ft²·°F)</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="nu_h_error"></div>
+                        </div>
+                        <div class="input-container">
+                            <label for="nu_l">Characteristic Length (L)</label>
+                            <div class="input-group">
+                                <input type="number" id="nu_l" placeholder="m">
+                                <select id="nu_l_unit" class="unit-select">
+                                     <option>m</option><option>cm</option><option>mm</option><option>ft</option><option>in</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="nu_l_error"></div>
+                        </div>
+                        <div class="input-container" style="grid-column: 1 / -1;">
+                            <label for="nu_k">Thermal Conductivity (k)</label>
+                            <div class="input-group">
+                                <input type="number" id="nu_k" placeholder="W/(m·K)">
+                                <select id="nu_k_unit" class="unit-select">
+                                    <option>W/(m·K)</option><option>BTU/(hr·ft·°F)</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="nu_k_error"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <label>Result (Dimensionless)</label>
+                        <div class="input-group">
+                            <div id="nu_result" class="result-box">0.00</div>
+                             <button class="copy-btn" data-target="nu_result" title="Copy to clipboard">
+                                <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+                                <svg class="check-icon hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                           </button>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="weberNumber" class="calculator-panel hidden">
+                    <h2 class="panel-title">Weber Number (We)</h2>
+                    <div class="input-grid">
+                        <div class="input-container">
+                            <label for="we_density">
+                               <span class="tooltip-container">Fluid Density (ρ)<span class="tooltip-icon">?</span><span class="tooltip-text">Mass per unit volume.</span></span>
+                           </label>
+                            <div class="input-group">
+                                <input type="number" id="we_density" placeholder="kg/m³">
+                                <select id="we_density_unit" class="unit-select">
+                                    <option>kg/m³</option><option>g/cm³</option><option>lb/ft³</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="we_density_error"></div>
+                        </div>
+                        <div class="input-container">
+                            <label for="we_velocity">Flow Velocity (V)</label>
+                            <div class="input-group">
+                                <input type="number" id="we_velocity" placeholder="m/s">
+                                <select id="we_velocity_unit" class="unit-select">
+                                    <option>m/s</option><option>cm/s</option><option>ft/s</option><option>km/h</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="we_velocity_error"></div>
+                        </div>
+                        <div class="input-container">
+                            <label for="we_length">Characteristic Length (L)</label>
+                            <div class="input-group">
+                                <input type="number" id="we_length" placeholder="m">
+                                <select id="we_length_unit" class="unit-select">
+                                    <option>m</option><option>cm</option><option>mm</option><option>ft</option><option>in</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="we_length_error"></div>
+                        </div>
+                        <div class="input-container">
+                            <label for="we_surface_tension">
+                                <span class="tooltip-container">Surface Tension (σ)<span class="tooltip-icon">?</span><span class="tooltip-text">The tendency of liquid surfaces to shrink into the minimum surface area possible.</span></span>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" id="we_surface_tension" placeholder="N/m">
+                                <select id="we_surface_tension_unit" class="unit-select">
+                                    <option>N/m</option><option>dyn/cm</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="we_surface_tension_error"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <label>Result (Dimensionless)</label>
+                        <div class="input-group">
+                            <div id="we_result" class="result-box">0.00</div>
+                            <button class="copy-btn" data-target="we_result" title="Copy to clipboard">
+                                <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+                                <svg class="check-icon hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                           </button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="yPlus" class="calculator-panel hidden">
+                    <h2 class="panel-title">Y+ Calculator</h2>
+                    <p style="font-size: 0.875rem; color: #9ca3af; margin-bottom: 1rem; margin-top: -0.5rem;">Calculates the required first cell thickness based on a target Y+ value.</p>
+                    <div class="input-grid">
+                        <!-- Y+ Inputs -->
+                        <div class="input-container">
+                             <label for="yp_density">
+                                <span class="tooltip-container">Fluid Density (ρ)<span class="tooltip-icon">?</span><span class="tooltip-text">Mass per unit volume.</span></span>
+                            </label>
+                             <div class="input-group">
+                                <input type="number" id="yp_density" placeholder="kg/m³">
+                                <select id="yp_density_unit" class="unit-select">
+                                    <option>kg/m³</option><option>g/cm³</option><option>lb/ft³</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="yp_density_error"></div>
+                        </div>
+                        <div class="input-container">
+                            <label for="yp_velocity">Freestream Velocity (U)</label>
+                            <div class="input-group">
+                                <input type="number" id="yp_velocity" placeholder="m/s">
+                                <select id="yp_velocity_unit" class="unit-select">
+                                    <option>m/s</option><option>cm/s</option><option>ft/s</option><option>km/h</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="yp_velocity_error"></div>
+                        </div>
+                        <div class="input-container">
+                            <label for="yp_length">Characteristic Length (L)</label>
+                            <div class="input-group">
+                                <input type="number" id="yp_length" placeholder="m">
+                                <select id="yp_length_unit" class="unit-select">
+                                    <option>m</option><option>cm</option><option>mm</option><option>ft</option><option>in</option>
+                                </select>
+                            </div>
+                             <div class="validation-message" id="yp_length_error"></div>
+                        </div>
+                        <div class="input-container">
+                           <label for="yp_viscosity">
+                                 <span class="tooltip-container">Dynamic Viscosity (μ)<span class="tooltip-icon">?</span><span class="tooltip-text">A fluid's resistance to shear stresses. Also called absolute viscosity.</span></span>
+                            </label>
+                            <div class="input-group">
+                                <input type="number" id="yp_viscosity" placeholder="Pa·s">
+                                <select id="yp_viscosity_unit" class="unit-select">
+                                    <option>Pa·s</option><option>cP</option>
+                                </select>
+                            </div>
+                            <div class="validation-message" id="yp_viscosity_error"></div>
+                        </div>
+                        <div class="input-container" style="grid-column: 1 / -1;">
+                            <label for="yp_target_y_plus">Desired Y+ Value</label>
+                            <input type="number" id="yp_target_y_plus" class="full-width-input" placeholder="e.g., 1 or 30">
+                            <div class="validation-message" id="yp_target_y_plus_error"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1.5rem;">
+                        <label>Resulting First Cell Thickness (y)</label>
+                        <div class="input-group">
+                            <div id="yp_result" class="result-box with-select">0.00</div>
+                            <select id="yp_result_unit" class="unit-select">
+                                <option>m</option>
+                                <option>cm</option>
+                                <option>mm</option>
+                                <option>in</option>
+                            </select>
+                             <button class="copy-btn" data-target="yp_result" title="Copy to clipboard">
+                                <svg class="copy-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
+                                <svg class="check-icon hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                           </button>
+                        </div>
+                    </div>
+                </section>
+
+                 <!-- Curve Fitting -->
+                <section id="curveFitting" class="calculator-panel hidden">
+                    <h2 class="panel-title">Curve Fitting (Quadratic)</h2>
+                     <p style="font-size: 0.875rem; color: #9ca3af; margin-bottom: 1rem; margin-top: -0.5rem;">
+                        Fits data to the equation: <b>Pressure Drop = aV² + bV</b>
+                    </p>
+                    <div style="margin-top: 1.5rem;">
+                        <table class="points-table">
+                            <thead>
+                                <tr><th>Velocity</th><th>Pressure Drop</th><th></th></tr>
+                            </thead>
+                            <tbody id="cf_points_container">
+                                <!-- Point rows will be inserted here by JS -->
+                            </tbody>
+                        </table>
+                        <button id="cf_add_point" class="action-button" style="width: auto; padding: 0.5rem 1rem; margin-top: 0.5rem;">Add Point</button>
+                    </div>
+
+                    <div style="margin-top: 1.5rem;">
+                        <canvas id="curveFitCanvas"></canvas>
+                        <div id="cf_equation_container" class="result-box" style="justify-content: center; flex-direction: column; align-items: center; padding: 1rem; height: auto;">
+                            <span id="cf_equation">Pressure Drop = ...</span>
+                            <span id="cf_r_squared" style="font-size: 0.9rem; color: #9ca3af; margin-top: 0.5rem;"></span>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js');
+        });
+      }
+    </script>
+</body>
+</html>
