@@ -7,13 +7,13 @@
     
     <link rel="manifest" href="manifest.json">
     
+    <meta name="theme-color" content="#1f2937">
+
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <script src="app.js" defer></script>
     <div class="container glass-effect">
-        <!-- Sidebar -->
         <aside class="sidebar">
             <h1 class="app-title">CFD CALC</h1>
             <nav id="sidebar" class="sidebar-nav">
@@ -36,11 +36,9 @@
             <button id="resetButton" class="reset-button">Reset All Data</button>
         </aside>
 
-        <!-- Main content -->
         <main id="mainArea" class="main-content">
             <div id="dataArea">
 
-                <!-- ... Existing calculator panels ... -->
                 <section id="hydraulicDiameter" class="calculator-panel">
                     <h2 class="panel-title">Hydraulic Diameter (Dₕ)</h2>
                     <div class="info-note" style="margin-bottom: 1.5rem;">
@@ -199,7 +197,6 @@
                     <div class="results-group" style="margin-top: 1rem;">
                         <h3 class="results-header">Results</h3>
                         <div class="results-grid">
-                            <!-- Reynolds Number -->
                             <div>
                                 <label>Reynolds Number (Re)</label>
                                 <div class="input-group">
@@ -210,7 +207,6 @@
                                    </button>
                                 </div>
                             </div>
-                            <!-- Kinematic Viscosity -->
                             <div>
                                 <label for="re_kinematic_viscosity_unit">
                                     <span class="tooltip-container">Kinematic Viscosity (ν)<span class="tooltip-icon">?</span><span class="tooltip-text">Ratio of dynamic viscosity to density (μ/ρ).</span></span>
@@ -223,17 +219,12 @@
                                     </select>
                                 </div>
                             </div>
-                            <!-- Entrance Length -->
                             <div>
                                 <label for="re_hydrodynamic_length_unit">Entrance Length (Le)</label>
                                 <div class="input-group">
                                     <div id="re_hydrodynamic_length_result" class="result-box with-select">0.00</div>
                                     <select id="re_hydrodynamic_length_unit" class="unit-select">
-                                        <option>m</option>
-                                        <option>cm</option>
-                                        <option>mm</option>
-                                        <option>ft</option>
-                                        <option>in</option>
+                                        <option>m</option><option>cm</option><option>mm</option><option>ft</option><option>in</option>
                                     </select>
                                 </div>
                             </div>
@@ -438,7 +429,6 @@
                     <h2 class="panel-title">Y+ Calculator</h2>
                     <p style="font-size: 0.875rem; color: #9ca3af; margin-bottom: 1rem; margin-top: -0.5rem;">Calculates the required first cell thickness based on a target Y+ value.</p>
                     <div class="input-grid">
-                        <!-- Y+ Inputs -->
                         <div class="input-container">
                              <label for="yp_density">
                                 <span class="tooltip-container">Fluid Density (ρ)<span class="tooltip-icon">?</span><span class="tooltip-text">Mass per unit volume.</span></span>
@@ -507,7 +497,6 @@
                     </div>
                 </section>
 
-                 <!-- Curve Fitting -->
                 <section id="curveFitting" class="calculator-panel hidden">
                     <h2 class="panel-title">Curve Fitting (Quadratic)</h2>
                      <p style="font-size: 0.875rem; color: #9ca3af; margin-bottom: 1rem; margin-top: -0.5rem;">
@@ -519,8 +508,7 @@
                                 <tr><th>Velocity</th><th>Pressure Drop</th><th></th></tr>
                             </thead>
                             <tbody id="cf_points_container">
-                                <!-- Point rows will be inserted here by JS -->
-                            </tbody>
+                                </tbody>
                         </table>
                         <button id="cf_add_point" class="action-button" style="width: auto; padding: 0.5rem 1rem; margin-top: 0.5rem;">Add Point</button>
                     </div>
@@ -533,16 +521,10 @@
                         </div>
                     </div>
                 </section>
-
             </div>
         </main>
     </div>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js');
-        });
-      }
-    </script>
+
+    <script src="app.js"></script>
 </body>
 </html>

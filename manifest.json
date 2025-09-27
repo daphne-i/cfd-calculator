@@ -1,13 +1,21 @@
 {
   "name": "CFD Calculator",
   "short_name": "CFD Calc",
-  "description": "An offline-first calculator for common CFD formulas.",
-  "start_url": "./index.html",
+  "description": "A pocket toolkit for Computational Fluid Dynamics calculations.",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#030712",
   "theme_color": "#1f2937",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    {
+      "src": "icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
   ]
 }
